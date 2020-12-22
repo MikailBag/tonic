@@ -14,12 +14,28 @@ use tracing::{debug, trace};
 
 const BUFFER_SIZE: usize = 8 * 1024;
 
+struct DynDecoder<T>(Box<dyn Decoder<Item = T, Error = Status> + Send + 'static>);
+
+// SAFETY: DynDecoder ensures no mutual access from several threads
+// is possible, because all its methods take &mut self.
+unsafe impl<T: Send> Sync for DynDecoder<T> {}
+
+impl<T> Decoder for DynDecoder<T> {
+    type Item = T;
+
+    type Error = Status;
+
+    fn decode(&mut self, src: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+        self.0.decode(src)
+    }
+}
+
 /// Streaming requests and responses.
 ///
 /// This will wrap some inner [`Body`] and [`Decoder`] and provide an interface
 /// to fetch the message stream and trailing metadata
 pub struct Streaming<T> {
-    decoder: Box<dyn Decoder<Item = T, Error = Status> + Send + Sync + 'static>,
+    decoder: DynDecoder<T>,
     body: BoxBody,
     state: State,
     direction: Direction,
@@ -75,10 +91,10 @@ impl<T> Streaming<T> {
     where
         B: Body + Send + Sync + 'static,
         B::Error: Into<crate::Error>,
-        D: Decoder<Item = T, Error = Status> + Send + Sync + 'static,
+        D: Decoder<Item = T, Error = Status> + Send + 'static,
     {
         Self {
-            decoder: Box::new(decoder),
+            decoder: DynDecoder(Box::new(decoder)),
             body: BoxBody::map_from(body),
             state: State::ReadHeader,
             direction,

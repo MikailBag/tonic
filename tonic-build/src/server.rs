@@ -166,7 +166,7 @@ fn generate_trait_methods<T: Service>(service: &T, proto_path: &str) -> TokenStr
 
                 quote! {
                     #stream_doc
-                    type #stream: Stream<Item = Result<#res_message, tonic::Status>> + Send + Sync + 'static;
+                    type #stream: Stream<Item = Result<#res_message, tonic::Status>> + Send + 'static;
 
                     #method_doc
                     async fn #name(&self, request: tonic::Request<#req_message>)
@@ -182,7 +182,7 @@ fn generate_trait_methods<T: Service>(service: &T, proto_path: &str) -> TokenStr
 
                 quote! {
                     #stream_doc
-                    type #stream: Stream<Item = Result<#res_message, tonic::Status>> + Send + Sync + 'static;
+                    type #stream: Stream<Item = Result<#res_message, tonic::Status>> + Send + 'static;
 
                     #method_doc
                     async fn #name(&self, request: tonic::Request<tonic::Streaming<#req_message>>)
