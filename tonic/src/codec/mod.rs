@@ -66,3 +66,23 @@ pub trait Decoder {
     /// for you.
     fn decode(&mut self, src: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error>;
 }
+
+impl<D: Decoder> Decoder for weird_mutex::WeirdMutex<D> {
+    type Item = D::Item;
+
+    type Error = D::Error;
+
+    fn decode(&mut self, src: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+        self.get_mut().decode(src)
+    }
+}
+
+impl<D: Decoder + ?Sized> Decoder for Box<D> {
+    type Item = D::Item;
+
+    type Error = D::Error;
+
+    fn decode(&mut self, src: &mut DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+        (&mut **self).decode(src)
+    }
+}

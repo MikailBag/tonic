@@ -81,7 +81,7 @@ mod sealed {
 
 /// A type erased http body.
 pub struct BoxBody {
-    inner: Pin<Box<dyn Body<Data = Bytes, Error = Status> + Send + Sync + 'static>>,
+    inner: Pin<Box<dyn Body<Data = Bytes, Error = Status> + Send + 'static>>,
 }
 
 struct MapBody<B>(B);
@@ -90,7 +90,7 @@ impl BoxBody {
     /// Create a new `BoxBody` mapping item and error to the default types.
     pub fn new<B>(inner: B) -> Self
     where
-        B: Body<Data = Bytes, Error = Status> + Send + Sync + 'static,
+        B: Body<Data = Bytes, Error = Status> + Send + 'static,
     {
         BoxBody {
             inner: Box::pin(inner),

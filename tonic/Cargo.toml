@@ -48,6 +48,7 @@ futures-util = { version = "0.3", default-features = false }
 tracing = "0.1"
 http = "0.2"
 base64 = "0.12"
+weird-mutex = { git = "https://github.com/MikailBag/weird-mutex" }
 
 percent-encoding = "2.0"
 tower-service = "0.3"
